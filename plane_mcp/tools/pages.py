@@ -76,13 +76,16 @@ def register_page_tools(mcp: FastMCP) -> None:
         project_id: str,
     ) -> list[dict[str, Any]]:
         """
-        List all pages in a project.
+        List root-level pages in a project (pages without a parent).
+
+        NOTE: Child pages (pages with a parent set) are NOT returned by this
+        endpoint. Use list_project_sub_pages to list children of a parent page.
 
         Args:
             project_id: UUID of the project
 
         Returns:
-            List of page objects
+            List of root-level page objects
         """
         result = _pages_request("GET", f"projects/{project_id}/pages/")
         if isinstance(result, list):
@@ -90,6 +93,41 @@ def register_page_tools(mcp: FastMCP) -> None:
         if isinstance(result, dict) and "results" in result:
             return result["results"]
         return [result] if result else []
+
+    @mcp.tool()
+    def list_project_sub_pages(
+        project_id: str,
+        page_ids: list[str],
+    ) -> list[dict[str, Any]]:
+        """
+        Retrieve multiple child pages by their known IDs.
+
+        IMPORTANT: Plane's legacy /api/ list endpoint only returns root-level
+        pages (parent=None). Child pages (with parent set) are invisible to
+        both list and individual retrieve endpoints. This tool attempts to
+        fetch each page by ID and returns those that succeed.
+
+        Use this when you know the page IDs (e.g. from domain config's
+        page_ids map) and need to verify they exist.
+
+        Args:
+            project_id: UUID of the project
+            page_ids: List of page UUIDs to retrieve
+
+        Returns:
+            List of page objects that were successfully retrieved
+        """
+        pages = []
+        for page_id in page_ids:
+            try:
+                page = _pages_request(
+                    "GET", f"projects/{project_id}/pages/{page_id}/"
+                )
+                if page and isinstance(page, dict) and page.get("id"):
+                    pages.append(page)
+            except Exception:
+                pass
+        return pages
 
     @mcp.tool()
     def create_project_page(
