@@ -32,7 +32,8 @@ def register_work_item_tools(mcp: FastMCP) -> None:
         external_source: str | None = None,
     ) -> list[WorkItem]:
         """
-        List all work items in a project.
+        List all work items in a project. Does NOT filter by cycle.
+        Use list_cycle_work_items to get tasks for a specific sprint/cycle.
 
         Args:
             workspace_slug: The workspace slug identifier

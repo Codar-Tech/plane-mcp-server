@@ -245,7 +245,8 @@ def register_cycle_tools(mcp: FastMCP) -> None:
         params: dict[str, Any] | None = None,
     ) -> list[WorkItem]:
         """
-        List work items in a cycle.
+        List work items in a specific cycle (sprint). Use this instead of
+        list_work_items when you need tasks for a specific sprint/cycle.
 
         Args:
             workspace_slug: The workspace slug identifier
